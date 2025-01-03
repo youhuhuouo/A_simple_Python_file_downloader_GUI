@@ -6,64 +6,29 @@
 File utility functions
 """
 
-import os
-from urllib.parse import urlparse, unquote
+from pathlib import Path
 
-def get_filename_from_url(url):
-    """
-    从URL中获取文件名
-    Get filename from URL
-    
-    Args:
-        url (str): 下载链接 Download URL
-        
-    Returns:
-        str: 文件名 Filename
-    """
-    # 解析URL Get filename from URL
-    parsed = urlparse(url)
-    path = unquote(parsed.path)
-    
-    # 获取文件名 Get filename
-    filename = os.path.basename(path)
-    
-    # 如果没有文件名，使用默认名称 If no filename, use default name
-    if not filename:
-        filename = "downloaded_file"
-        
-    return filename
-
-def ensure_dir(directory):
-    """
-    确保目录存在
-    Ensure directory exists
-    
-    Args:
-        directory (str): 目录路径 Directory path
-    """
-    if not os.path.exists(directory):
-        os.makedirs(directory) 
-
-def get_download_dir():
+def get_downloads_dir():
     """
     获取下载目录
-    Get download directory
+    Get downloads directory
     
     Returns:
-        str: 下载目录路径 Download directory path
+        Path: 下载目录路径 Downloads directory path
     """
-    # 获取程序所在目录 Get program directory
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    download_dir = os.path.join(base_dir, 'downloads')
+    # 使用程序目录下的downloads文件夹
+    # Use downloads folder in program directory
+    downloads = Path('Downloads')
     
-    # 确保下载目录存在 Ensure download directory exists
-    ensure_dir(download_dir)
-    return download_dir
+    # 确保目录存在 Ensure directory exists
+    downloads.mkdir(parents=True, exist_ok=True)
+    
+    return downloads
 
 def get_safe_filename(filename):
     """
-    获取安全的文件名（移除非法字符）
-    Get safe filename (remove illegal characters)
+    获取安全的文件名
+    Get safe filename
     
     Args:
         filename (str): 原始文件名 Original filename
@@ -71,33 +36,33 @@ def get_safe_filename(filename):
     Returns:
         str: 安全的文件名 Safe filename
     """
-    # 替换Windows下的非法字符 Replace illegal characters in Windows
-    illegal_chars = '<>:"/\\|?*'
-    for char in illegal_chars:
+    # 替换不安全字符 Replace unsafe characters
+    unsafe_chars = '<>:"/\\|?*'
+    for char in unsafe_chars:
         filename = filename.replace(char, '_')
     return filename
 
-def get_unique_filename(filepath):
+def get_unique_filepath(filepath):
     """
-    获取唯一的文件名（如果文件已存在则添加序号）
-    Get unique filename (add sequence number if file exists)
+    获取唯一的文件路径（如果文件已存在则添加序号）
+    Get unique filepath (add number if file exists)
     
     Args:
-        filepath (str): 文件路径 File path
+        filepath (Path): 原始文件路径 Original filepath
         
     Returns:
-        str: 唯一的文件路径 Unique file path
+        Path: 唯一的文件路径 Unique filepath
     """
-    if not os.path.exists(filepath):
+    if not filepath.exists():
         return filepath
         
-    directory = os.path.dirname(filepath)
-    filename = os.path.basename(filepath)
-    name, ext = os.path.splitext(filename)
+    directory = filepath.parent
+    filename = filepath.stem
+    extension = filepath.suffix
+    counter = 1
     
-    index = 1
     while True:
-        new_filepath = os.path.join(directory, f"{name} ({index}){ext}")
-        if not os.path.exists(new_filepath):
+        new_filepath = directory / f"{filename}_{counter}{extension}"
+        if not new_filepath.exists():
             return new_filepath
-        index += 1 
+        counter += 1 

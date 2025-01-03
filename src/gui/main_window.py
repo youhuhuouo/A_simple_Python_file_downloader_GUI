@@ -8,7 +8,6 @@ Simple downloader GUI
 
 import tkinter as tk
 from tkinter import ttk, messagebox
-from pathlib import Path
 from ..core.downloader import Downloader
 
 class MainWindow:

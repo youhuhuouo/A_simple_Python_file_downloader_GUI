@@ -6,11 +6,11 @@
 Simple downloader core class
 """
 
-import os
 import threading
 import requests
 import time
 from pathlib import Path
+from ..utils.file_utils import get_downloads_dir, get_safe_filename, get_unique_filepath
 
 class Downloader:
     """简单下载器类 Simple downloader class"""
@@ -38,7 +38,9 @@ class Downloader:
         # 在线程外处理文件路径 Handle file path outside thread
         if save_path is None:
             filename = url.split('/')[-1] or 'downloaded_file'
-            save_path = Path('downloads') / filename
+            filename = get_safe_filename(filename)
+            save_path = get_downloads_dir() / filename
+            save_path = get_unique_filepath(save_path)
         else:
             save_path = Path(save_path)
             
